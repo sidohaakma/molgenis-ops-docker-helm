@@ -1,0 +1,29 @@
+{{- if .Values.persistence.enabled -}}
+apiVersion: extensions/v1beta1
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.molgenis.persistence.claim }}
+  annotations:
+    {{- if .Values.persistence.retain }}
+    volume.beta.kubernetes.io/storage-class: "nfs-provisioner-retain"
+    {{- else }}
+    volume.beta.kubernetes.io/storage-class: "nfs-provisioner"
+    {{- end }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+    {{- if eq .Values.persistence.molgenis.size "default" }}
+      {{- if eq .Values.molgenis.type.kind "small" }}
+      storage: {{ .Values.molgenis.type.small.persistence.size }}
+      {{- else if eq .Values.molgenis.type.kind "medium" }}
+      storage: {{ .Values.molgenis.type.medium.persistence.size }}
+      {{- else }}
+      storage: {{ .Values.molgenis.type.large.persistence.size }}
+      {{- end }}
+    {{ else }}
+      storage: {{ .Values.persistence.molgenis.size }}
+    {{- end }}
+{{- end }}

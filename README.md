@@ -1,4 +1,4 @@
-# MOLGENIS Helm templates
+# MOLGENIS - Helm templates
 
 These are the Helm templates that we will use for MOLGENIS operations. Basic concepts in respect to docker you need to know.
 
@@ -77,7 +77,7 @@ When you want to see what is running on the clusters at the CIT you have to make
 You can access the cluster with kubeconfig-files. You can obtain these by downloading them from the 
 MOLGENIS kubernetes cluster.
 
-- Go to https://rancher.molgenis.org:7443 and login
+- Go to https://rancher.molgenis.org:7777 and login
 - Go to Rancher --> Cluster: *#name#* --> *Kubeconfig File*
 - Go to a **Terminal** where ```kubectl``` is available
 - Add this configuration to ~/.kube/config (or place a new file besides this one)
@@ -101,9 +101,11 @@ kubectl get pods --namespace=*#namespace of application#*
 
 This repository is serves also as a catalogue for Rancher. We have serveral apps that are served through this repoistory. e.g.
 
-- [Jenkins](molgenis-jenkins/README.md)
-- [NEXUS](molgenis-nexus/README.md)
-- [HTTPD](molgenis-httpd/README.md)
+- [Jenkins](charts/molgenis-jenkins/README.md)
+- [NEXUS](charts/molgenis-nexus/README.md)
+- [Vault](charts/molgenis-vault/README.md)
+- [MOLGENIS](charts/molgenis/README.md)
+- [OpenCPU](charts/molgenis-opencpu/README.md)
 
 ### Useful commands
 You can you need to know to easily develop and deploy helm-charts
@@ -116,14 +118,43 @@ You can you need to know to easily develop and deploy helm-charts
 
   Check if your configuration deploys on a kubernetes cluster and check the configuration
 
-- ```helm install .```
+- ```helm install . #release name# --namespace #remote namespace#```
   
   Do it in the root of the project where the Chart.yaml is located
   It installs a release of a kubernetes stack. You also store this as an artifact in a kubernetes repository
+- ```helm package .```
+  
+  You can create a package which can be uploaded in the molgenis helm repository
+  
+- ```helm publish```
+  You still have to create an ```index.yaml``` for the chart. You can do this by executing this command: ```helm repo index #directory name of helm chart#```
+  
+  Then you can upload it by executing:
+  
+  - ```curl -v --user #username#:#password# --upload-file index.yaml  https://registry.molgenis.org/repository/helm/#chart name#/index.yml```
+  - ```curl -v --user #username#:#password# --upload-file #chart name#-#version#.tgz https://registry.molgenis.org/repository/helm/#chart name#/#chart name#-#version#.tgz```
+  
+  Now you have to add the repository locally to use in your ```requirements.yaml```.
+  
+  - ```helm repo add #repository name# https://registry.molgenis.org/repository/helm/molgenis```
+
+- ```helm dep build```
+  
+  You can build your dependencies (create a ```charts``` directory and install the chart in it) of the helm-chart. 
+
 - ```helm list```
   
   Lists all installed releases
 - ```helm delete #release#```
   
   Performs a sort of mvn clean on your workspace. Very handy for zombie persistent volumes or claims.
+
+- ```install tiller on remote cluster```
+
+  To install tiller on a remote cluster you need an rbac-config.yml.
+  ```kubectl create -f rbac-config.yaml```
+
+  When you have defined the yaml you can add the tiller to the cluster by following the steps below.
+  ```helm init --service-account tiller```  
+  
   

@@ -1,0 +1,65 @@
+# Default values for nexus.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+environment: production
+
+nexus:
+  name: nexus
+  strategy:
+    type: Recreate
+  selector: nexus
+  restartPolicy: Always
+  image:
+    repository: molgenis/nexus3
+    tag: latest
+    pullPolicy: Always
+  port:
+    docker: 5000
+    ui: 8081
+  path:
+    dockerV2: v2
+  service:
+    type: ClusterIP
+
+nexusProxy:
+  name: nexus-proxy
+  hostname: registry.molgenis.org
+  strategy:
+    type: Recreate
+  selector: nexus-proxy
+  restartPolicy: Always
+  image:
+    repository: molgenis/httpd
+    tag: latest
+    pullPolicy: Always
+  port: 80
+  service:
+    type: LoadBalancer
+
+
+ingress:
+  enabled: true
+  annotations: {}
+  path: /
+  hosts:
+  - name: registry.molgenis.org
+  tls: []
+
+persistence:
+  enabled: true
+  claim: molgenis-nexus
+  size: 500Gi
+
+
+resources: {}
+
+nodeSelector: {
+  deployPod: "true"
+}
+
+tolerations: []
+
+affinity: {}

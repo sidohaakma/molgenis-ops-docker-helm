@@ -1,0 +1,183 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  {{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+  name: {{ template "molgenis.fullname" . }}
+  labels:
+    app: {{ template "molgenis.name" . }}
+    chart: {{ template "molgenis.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "molgenis.name" . }}
+      release: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ template "molgenis.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: molgenis
+        {{- with .Values.molgenis }}
+          image: {{ .image.repository }}/{{ .image.name }}:{{ .image.tag }}
+          imagePullPolicy: {{ .image.pullPolicy }}
+          env:
+            - name: molgenis.home
+              value: /home/molgenis
+            - name: opencpu.uri.host
+              value: {{ .services.opencpu.host }}
+            - name: elasticsearch.transport.addresses
+              value: {{ .services.elasticsearch.transportAddresses }}
+            - name: elasticsearch.cluster.name
+              value: {{ .services.elasticsearch.clusterName }}
+            - name: db_uri
+              value: jdbc:postgresql://{{ .services.postgres.host }}/{{ .services.postgres.scheme }}
+            - name: db_user
+              value: {{ .services.postgres.user }}
+            - name: db_password
+              value: "{{ .services.postgres.password }}"
+            - name: admin.password
+              value: "{{ .adminPassword }}"
+            - name: CATALINA_OPTS
+            {{- if eq .type.kind "small" }}
+              value: "-Xmx{{ .type.small.javaOpts.maxHeapSpace }} -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled"
+            {{- else if eq .type.kind "medium"}}
+              value: "-Xmx{{ .type.medium.javaOpts.maxHeapSpace }} -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled"
+            {{- else }}
+              value: "-Xmx{{ .type.large.javaOpts.maxHeapSpace }} -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled"
+            {{- end }}
+          ports:
+            - containerPort: 8080
+          {{- if $.Values.persistence.enabled }}
+          volumeMounts:
+          - name: molgenis-nfs
+            mountPath: /home/molgenis
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            failureThreshold: 25
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /api/v2/version
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            failureThreshold: 3
+            successThreshold: 1
+          resources:
+          {{- if eq .type.kind "small" }}
+{{ toYaml .type.small.resources | indent 12 }}
+          {{- else if eq .type.kind "medium" }}
+{{ toYaml .type.medium.resources | indent 12 }}
+          {{- else }}
+{{ toYaml .type.large.resources | indent 12 }}
+          {{- end }}
+        {{- end }}
+
+        - name: elasticsearch
+        {{- with .Values.elasticsearch }}
+          image: "{{ .image.repository }}:{{ .image.tag }}"
+          imagePullPolicy: {{ .image.pullPolicy }}
+          env:
+            - name: cluster.name
+              value: {{ .clusterName }}
+            - name: bootstrap.memory_lock
+              value: "true"
+            - name: ES_JAVA_OPTS
+            {{- if eq $.Values.molgenis.type.kind "small" }}
+              value: "{{ .type.small.javaOpts }}"
+            {{- else if eq $.Values.molgenis.type.kind "medium"}}
+              value: "{{ .type.medium.javaOpts }}"
+            {{- else }}
+              value: "{{ .type.large.javaOpts }}"
+            {{- end }}
+            - name: xpack.security.enabled
+              value: "false"
+            - name: discovery.type
+              value: single-node
+          ports:
+            - containerPort: 9200
+            - containerPort: 9300
+          {{- if $.Values.persistence.enabled }}
+          volumeMounts:
+          - name: elasticsearch-nfs
+            mountPath: /usr/share/elasticsearch/data
+          {{- end }}
+          resources:
+          {{- if eq $.Values.molgenis.type.kind "small" }}
+{{ toYaml .type.small.resources | indent 12 }}
+          {{- else if eq $.Values.molgenis.type.kind "medium" }}
+{{ toYaml .type.medium.resources | indent 12 }}
+          {{- else }}
+{{ toYaml .type.large.resources | indent 12 }}
+          {{- end }}
+        {{- end }}
+
+        - name: postgres
+        {{- with .Values.postgres }}
+          image: "{{ .image.repository }}:{{ .image.tag }}"
+          imagePullPolicy: {{ .image.pullPolicy }}
+          env:
+            - name: POSTGRES_USER
+              value: {{ $.Values.molgenis.services.postgres.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ $.Values.molgenis.services.postgres.password }}
+            - name: POSTGRES_DB
+              value: {{ $.Values.molgenis.services.postgres.scheme }}
+          ports:
+            - containerPort: 5432
+          resources:
+          {{- if eq $.Values.molgenis.type.kind "small" }}
+{{ toYaml .type.small.resources | indent 12 }}
+          {{- else if eq $.Values.molgenis.type.kind "medium" }}
+{{ toYaml .type.medium.resources | indent 12 }}
+          {{- else }}
+{{ toYaml .type.large.resources | indent 12 }}
+          {{- end }}
+          {{- if $.Values.persistence.enabled }}
+          volumeMounts:
+          - name: postgres-nfs
+            mountPath: /var/lib/postgresql/data
+          {{- end }}
+        {{- end }}
+
+
+{{- if .Values.persistence.enabled }}
+      volumes:
+        - name: molgenis-nfs
+          persistentVolumeClaim:
+            claimName: {{ .Values.molgenis.persistence.claim }}
+        - name: elasticsearch-nfs
+          persistentVolumeClaim:
+            claimName: {{ .Values.elasticsearch.persistence.claim }}
+        - name: postgres-nfs
+          persistentVolumeClaim:
+            claimName: {{ .Values.postgres.persistence.claim }}
+{{- end }}
+
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
