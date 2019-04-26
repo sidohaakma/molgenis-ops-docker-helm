@@ -8,3 +8,15 @@ questions:
   type: string
   required: true
   group: "Cleanup"
+- variable: cleanup.project
+  label: Project you want to clean
+  default: "dev-molgenis"
+  type: enum
+  options:
+   - edge-molgenis
+   - dev-molgenis
+   - test-molgenis
+   - accept-molgenis
+   - prod-molgenis
+  required: true
+  group: "Cleanup"

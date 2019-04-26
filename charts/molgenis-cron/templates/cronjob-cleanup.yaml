@@ -13,14 +13,18 @@ spec:
           - name: cleanup
             image: {{ .image.repository }}/{{ .image.name }}:{{ .image.tag }}
             command: ["/bin/sh","-c"]
-            args: ["{{ template "joinListWithSemicolon" .commands }}"]
+            args: ["rancher context switch {{ .project }}; \
+                    rancher app | awk '{print $2}' | grep preview- > preview.list; \
+                    xargs rancher app delete < preview.list"]
             volumeMounts:
             - name: rancher-config
               mountPath: ~/.rancher
+            env:
+              
           volumes:
           - name: rancher-config
-            configMap:
-              name: cli2-json
+            secrete:
+              secret-name: cli2-json
           restartPolicy: OnFailure
           {{- end }}
         
