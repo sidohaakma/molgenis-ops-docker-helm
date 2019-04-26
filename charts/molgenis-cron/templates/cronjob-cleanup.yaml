@@ -1,0 +1,18 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cronjob-cleanup
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          {{- with $.Values.cleanup }}
+          - name: cleanup
+            image: {{ .image.repository }}/{{ .image.name }}:{{ .image.tag }}
+            command: ["/bin/sh","-c"]
+            args: ["{{ template "joinListWithSemicolon" .commands }}"]
+          restartPolicy: OnFailure
+          {{- end }}

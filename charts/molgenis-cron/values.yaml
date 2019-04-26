@@ -1,0 +1,18 @@
+# Default values for opencpu.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+environment: production
+
+cleanup:
+  image:
+    tag: v2.2.0
+    repository: rancher
+    name: cli2
+  commands:
+    - "rancher context switch dev-molgenis"
+    - "rancher app | awk '{print $2}' | grep preview- > preview.list"
+    - "xargs rancher app delete < preview.list" 
+    

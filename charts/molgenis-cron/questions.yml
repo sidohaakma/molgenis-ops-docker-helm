@@ -1,0 +1,10 @@
+
+categories:
+- MOLGENIS
+questions:
+- variable: cleanup.image.tag
+  label: Cleanup version
+  default: "v2.2.0"
+  type: string
+  required: true
+  group: "Cleanup"

@@ -1,0 +1,12 @@
+apiVersion: v1
+appVersion: "1.0"
+description: Cron jobs for MOLGENIS in Kubernets
+name: molgenis-cron
+version: 0.0.1
+sources:
+- https://github.com/molgenis/molgenis-ops-helm.git
+icon: https://raw.githubusercontent.com/molgenis/molgenis-ops-helm/master/charts/molgenis-cron/catalogIcon-molgenis-cron.png
+home: https://www.opencpu.org
+maintainers:
+- name: sidohaakma
+- name: fdlk
