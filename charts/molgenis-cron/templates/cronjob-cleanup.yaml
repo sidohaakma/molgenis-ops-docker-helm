@@ -14,5 +14,14 @@ spec:
             image: {{ .image.repository }}/{{ .image.name }}:{{ .image.tag }}
             command: ["/bin/sh","-c"]
             args: ["{{ template "joinListWithSemicolon" .commands }}"]
+            volumeMounts:
+            - name: rancher-config
+              mountPath: ~/.rancher
+          volumes:
+          - name: rancher-config
+            configMap:
+              name: cli2-json
           restartPolicy: OnFailure
           {{- end }}
+        
+        
