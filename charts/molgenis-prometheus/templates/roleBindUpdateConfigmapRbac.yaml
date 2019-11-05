@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: configmapUpdaterRoleBinder
+  namespace: molgenis-prometheus
+subjects:
+- kind: ServiceAccount
+  name: update-configmap-bot
+  namespace: molgenis-prometheus
+roleRef:
+  kind: Role 
+  name: updateConfigmapRole
+  apiGroup: rbac.authorization.k8s.io

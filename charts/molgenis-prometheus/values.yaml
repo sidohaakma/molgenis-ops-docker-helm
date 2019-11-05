@@ -400,3 +400,4 @@ prometheus:
               target_label: kubernetes_pod_name
 secret:
   molgenisMetrics: "xxxx"
+  GITHUBTOKEN: "xxxx"
