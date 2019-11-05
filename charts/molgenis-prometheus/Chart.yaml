@@ -1,6 +1,6 @@
 name: molgenis-prometheus
 home: https://prometheus.io/
-version: 0.0.16
+version: 0.0.17
 appVersion: 2.7.0
 description: Molgenis installation for the Prometheus chart.
 sources:
@@ -9,3 +9,4 @@ icon: https://raw.githubusercontent.com/molgenis/molgenis-ops-helm/master/charts
 maintainers:
 - name: fdlk
 - name: sidohaakma
+- name: christianhilbrands

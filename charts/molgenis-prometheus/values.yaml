@@ -117,6 +117,22 @@ prometheus:
         - /etc/config/rules
         - /etc/config/alerts
       scrape_configs:
+        - job_name: 'masterBranchNodes'
+          file_sd_configs:
+            - files:
+              - /etc/configProm/masterTargetsAcquired.yml
+        - job_name: '20BranchNodes'
+          file_sd_configs:
+            - files:
+              - /etc/configProm/20TargetsAcquired.yml
+        - job_name: '10BranchNodes'
+          file_sd_configs:
+            - files:
+              - /etc/configProm/10TargetsAcquired.yml
+        - job_name: '01BranchNodes'
+          file_sd_configs:
+            - files:
+              - /etc/configProm/01TargetsAcquired.yml
         - job_name: jenkins
           metrics_path: '/prometheus/'
           scheme: https
