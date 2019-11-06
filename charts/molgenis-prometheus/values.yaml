@@ -16,9 +16,16 @@ prometheus:
       receivers:
         - name: default-receiver
           slack_configs:
+            {{- if eq .Values.environment.cluster development }}
             - channel: '#prometheus'
               send_resolved: true
               text: "{{ range .Alerts }}{{ .Annotations.message }}\n{{ end }}"
+            {{ end }}
+            {{ if eq .Values.environment.cluster production }}
+            - channel: '#alerts'
+              send_resolved: true
+              text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}"
+            {{ end }}
       route:
         group_wait: 10s
         group_interval: 5m
@@ -82,6 +89,7 @@ prometheus:
   serverFiles:
     alerts:
       groups:
+        {{ if eq .Values.environment.cluster production }}
         - name: nodes
           rules:
             - alert: "Instance or node_exporter Down"
@@ -174,6 +182,7 @@ prometheus:
                 severity: warning
                 summary: "Swap is filling up (instance {{ $labels.instance }})"
                 message: "Swap is filling up (>80%)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"
+        {{ end }}
         - name: nodes
           rules:
             - alert: "Node Down"
@@ -189,26 +198,13 @@ prometheus:
               annotations:
                 severity: "WARN"
                 message: "Pod {{$labels.container}} in namespace {{$labels.namespace}} got OOMKilled."
-        - name: services
-          rules:
-            - alert: "Many Previews Up"
-              expr: sum(kube_service_info{namespace=~"preview.*", service=~".*molgenis"}) > 5
-              annotations:
-                severity: "DEBUG"
-                message: "{{$value}} PR previews are currently deployed"
-        - name: molgenis
-          rules:
-            - alert: "Molgenis Down"
-              expr: up{job="molgenis-metrics"} == 0
-              annotations:
-                severity: "ERROR"
-                message: "{{$labels.instance}} is down"
     rules: {}
     prometheus.yml:
       rule_files:
         - /etc/config/rules
         - /etc/config/alerts
       scrape_configs:
+        {{ if eq .Values.environment.cluster production }}
         - job_name: 'masterBranchNodes'
           file_sd_configs:
             - files:
@@ -225,21 +221,14 @@ prometheus:
           file_sd_configs:
             - files:
               - /etc/configProm/01TargetsAcquired.yml
+        {{ end }}
+        {{ if eq .Values.environment.cluster development }}
         - job_name: jenkins
           metrics_path: '/prometheus/'
           scheme: https
           static_configs:
             - targets: ['jenkins.dev.molgenis.org:443']
-        - job_name: 'molgenis-metrics'
-          metrics_path: /api/metrics/prometheus
-          scheme: https
-          static_configs:
-            - targets:
-                - master.dev.molgenis.org:443
-                - latest.test.molgenis.org:443
-          basic_auth:
-            username: prometheus
-            password_file: '/etc/secrets/molgenis-metrics'
+        {{ end }}
         - job_name: prometheus
           static_configs:
             - targets:
@@ -509,3 +498,5 @@ prometheus:
 secret:
   molgenisMetrics: "xxxx"
   GITHUBTOKEN: "xxxx"
+environment:
+  cluster: development
