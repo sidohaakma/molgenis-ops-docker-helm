@@ -9,7 +9,7 @@ spec:
       template:
         spec:
           containers:
-          {{- if eq .Values.environment.cluster production }}
+          {{ if and .Values.environment.cluster (eq .Values.environment.cluster "production") }}
           - name: get-targets
             image: alpine:latest
             envFrom:
