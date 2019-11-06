@@ -16,12 +16,12 @@ prometheus:
       receivers:
         - name: default-receiver
           slack_configs:
-            {{- if eq .Values.environment.cluster development }}
+            {{- if eq .Values.environment.cluster "development" }}
             - channel: '#prometheus'
               send_resolved: true
               text: "{{ range .Alerts }}{{ .Annotations.message }}\n{{ end }}"
             {{ end }}
-            {{ if eq .Values.environment.cluster production }}
+            {{ if eq .Values.environment.cluster "production" }}
             - channel: '#alerts'
               send_resolved: true
               text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}"
@@ -89,7 +89,7 @@ prometheus:
   serverFiles:
     alerts:
       groups:
-        {{- if eq .Values.environment.cluster production }}
+        {{- if eq .Values.environment.cluster "production" }}
         - name: nodes
           rules:
             - alert: "Instance or node_exporter Down"
@@ -204,7 +204,7 @@ prometheus:
         - /etc/config/rules
         - /etc/config/alerts
       scrape_configs:
-        {{- if eq .Values.environment.cluster production }}
+        {{- if eq .Values.environment.cluster "production" }}
         - job_name: 'masterBranchNodes'
           file_sd_configs:
             - files:
@@ -222,7 +222,7 @@ prometheus:
             - files:
               - /etc/configProm/01TargetsAcquired.yml
         {{ end }}
-        {{- if eq .Values.environment.cluster development }}
+        {{- if eq .Values.environment.cluster "development" }}
         - job_name: jenkins
           metrics_path: '/prometheus/'
           scheme: https
@@ -498,4 +498,4 @@ prometheus:
 secret:
   GITHUBTOKEN: "xxxx"
 environment:
-  cluster: development
+  cluster: "development"
