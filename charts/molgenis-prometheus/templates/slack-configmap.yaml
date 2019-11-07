@@ -4,12 +4,12 @@ metadata:
   name: slack-configmap
 data:
   {{- if eq .Values.environment.cluster "development"}}
-  - channel: '#prometheus'
-    send_resolved: true
-    text: "{{ range .Alerts }}{{ .Annotations.message }}\n{{ end }}"
+  "- channel: '#prometheus'"
+  "  send_resolved: true"
+  "  text: \"{{ range .Alerts }}{{ .Annotations.message }}\n{{ end }}\""
   {{- end}}
   {{- if eq .Values.environment.cluster "production"}}
-  - channel: '#alerts'
-    send_resolved: true
-    text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}"
+  "- channel: '#alerts'"
+  "  send_resolved: true"
+  "  text: \"{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}\""
   {{- end}}
