@@ -27,9 +27,9 @@ prometheus:
                   configMapKeyRef:
                     name: slack-configmap
                     key: chText
-            - channel: $(chType)
+            - channel: "$(chType)"
               send_resolved: true
-              text: $(chText)
+              text: "$(chText)"
       route:
         group_wait: 10s
         group_interval: 5m
