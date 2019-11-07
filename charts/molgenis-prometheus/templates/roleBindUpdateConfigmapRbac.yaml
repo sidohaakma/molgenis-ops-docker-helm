@@ -8,6 +8,6 @@ subjects:
   name: update-configmap-bot
   namespace: molgenis-prometheus
 roleRef:
-  kind: Role 
+  kind: Role
   name: updateConfigmapRole
   apiGroup: rbac.authorization.k8s.io
