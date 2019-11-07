@@ -1,4 +1,15 @@
 prometheus:
+  env:
+    - name: chType
+      valueFrom:
+        configMapKeyRef:
+          name: slack-configmap
+          key: chType
+    - name: chText
+      valueFrom:
+        configMapKeyRef:
+          name: slack-configmap
+          key: chText
   alertmanager:
     nodeSelector:
       deployPod: "true"
@@ -19,17 +30,6 @@ prometheus:
             - channel: $(chType)
               send_resolved: true
               text: $(chText)
-      env:
-        - name: chType
-          valueFrom:
-            configMapKeyRef:
-              name: slack-configmap
-              key: chType
-        - name: chText
-          valueFrom:
-            configMapKeyRef:
-              name: slack-configmap
-              key: chText
       route:
         group_wait: 10s
         group_interval: 5m
