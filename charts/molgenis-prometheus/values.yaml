@@ -29,7 +29,7 @@ prometheus:
                     key: chText
             envFrom:
               - configMapRef:
-                name: slack-configmap
+                  name: slack-configmap
             - channel: $chType
               send_resolved: true
               text: $chText
