@@ -16,20 +16,20 @@ prometheus:
       receivers:
         - name: default-receiver
           slack_configs:
-            env:
-              - name: chType
-                valueFrom:
-                  configMapKeyRef:
-                    name: slack-configmap
-                    key: chType
-              - name: chText
-                valueFrom:
-                  configMapKeyRef:
-                    name: slack-configmap
-                    key: chText
-            - channel: "$(chType)"
+            - channel: $(chType)
               send_resolved: true
-              text: "$(chText)"
+              text: $(chText)
+      env:
+        - name: chType
+          valueFrom:
+            configMapKeyRef:
+              name: slack-configmap
+              key: chType
+        - name: chText
+          valueFrom:
+            configMapKeyRef:
+              name: slack-configmap
+              key: chText
       route:
         group_wait: 10s
         group_interval: 5m
