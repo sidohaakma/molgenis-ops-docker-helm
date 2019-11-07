@@ -16,16 +16,9 @@ prometheus:
       receivers:
         - name: default-receiver
           slack_configs:
-            {{- if eq .Values.environment.cluster "development"}}
-            - channel: '#prometheus'
-              send_resolved: true
-              text: "{{ range .Alerts }}{{ .Annotations.message }}\n{{ end }}"
-            {{- end}}
-            {{- if eq .Values.environment.cluster "production"}}
-            - channel: '#alerts'
-              send_resolved: true
-              text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}"
-            {{- end}}
+            envFrom:
+              - configMapRef:
+                name: slack-configmap
       route:
         group_wait: 10s
         group_interval: 5m
@@ -89,7 +82,6 @@ prometheus:
   serverFiles:
     alerts:
       groups:
-        {{- if eq .Values.environment.cluster "production"}}
         - name: nodes
           rules:
             - alert: "Instance or node_exporter Down"
@@ -182,7 +174,6 @@ prometheus:
                 severity: warning
                 summary: "Swap is filling up (instance {{ $labels.instance }})"
                 message: "Swap is filling up (>80%)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"
-        {{- end}}
         - name: nodes
           rules:
             - alert: "Node Down"
@@ -204,31 +195,9 @@ prometheus:
         - /etc/config/rules
         - /etc/config/alerts
       scrape_configs:
-        {{- if eq .Values.environment.cluster "production"}}
-        - job_name: 'masterBranchNodes'
-          file_sd_configs:
-            - files:
-              - /etc/configProm/masterTargetsAcquired.yml
-        - job_name: '20BranchNodes'
-          file_sd_configs:
-            - files:
-              - /etc/configProm/20TargetsAcquired.yml
-        - job_name: '10BranchNodes'
-          file_sd_configs:
-            - files:
-              - /etc/configProm/10TargetsAcquired.yml
-        - job_name: '01BranchNodes'
-          file_sd_configs:
-            - files:
-              - /etc/configProm/01TargetsAcquired.yml
-        {{- end}}
-        {{- if eq .Values.environment.cluster "development"}}
-        - job_name: jenkins
-          metrics_path: '/prometheus/'
-          scheme: https
-          static_configs:
-            - targets: ['jenkins.dev.molgenis.org:443']
-        {{- end}}
+        envFrom:
+          - configMapRef:
+            name: scrape-config-configmap
         - job_name: prometheus
           static_configs:
             - targets:
