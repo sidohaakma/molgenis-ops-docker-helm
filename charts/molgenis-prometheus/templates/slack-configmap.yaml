@@ -1,13 +1,18 @@
+{{- if eq .Values.environment.cluster "development" -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: slack-configmap
 data:
-{{- if eq .Values.environment.cluster "development" -}}
   chType: "'#prometheus'"
   chText: "{{ range .Alerts }}{{ .Annotations.message }}\n{{ end }}"
 {{- end -}}
 {{- if eq .Values.environment.cluster "production" -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: slack-configmap
+data:
   chType: "'#alerts'"
   chText: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}"
 {{- end -}}
