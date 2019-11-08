@@ -9,20 +9,20 @@ prometheus:
       requests:
         cpu: 10m
         memory: 32Mi
-    envFrom:
-    - configMapRef:
-        name: slack-configmap
-    env:
-    - name: chType
-      valueFrom:
-        configMapKeyRef:
-          name: slack-configmap
-          key: chType
-    - name: chText
-      valueFrom:
-        configMapKeyRef:
-          name: slack-configmap
-          key: chText
+    # envFrom:
+    # - configMapRef:
+    #     name: slack-configmap
+    # env:
+    # - name: chType
+    #   valueFrom:
+    #     configMapKeyRef:
+    #       name: slack-configmap
+    #       key: chType
+    # - name: chText
+    #   valueFrom:
+    #     configMapKeyRef:
+    #       name: slack-configmap
+    #       key: chText
   alertmanagerFiles:
     alertmanager.yml:
       global:
@@ -30,9 +30,14 @@ prometheus:
       receivers:
         - name: default-receiver
           slack_configs:
-            - channel: $chType
+            environment: production
+            - channel: '#alerts'
               send_resolved: true
-              text: $chText
+              text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}"
+            environment:
+            - channel: '#prometheus'
+              send_resolved: true
+              text: "{{ range .Alerts }}{{ .Annotations.message }}\n{{ end }}"
       route:
         group_wait: 10s
         group_interval: 5m
