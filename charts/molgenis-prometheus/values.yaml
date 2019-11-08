@@ -12,17 +12,17 @@ prometheus:
     envFrom:
     - configMapRef:
         name: slack-configmap
-    # env:
-    # - name: chType
-    #   valueFrom:
-    #     configMapKeyRef:
-    #       name: slack-configmap
-    #       key: chType
-    # - name: chText
-    #   valueFrom:
-    #     configMapKeyRef:
-    #       name: slack-configmap
-    #       key: chText
+    env:
+    - name: chType
+      valueFrom:
+        configMapKeyRef:
+          name: slack-configmap
+          key: chType
+    - name: chText
+      valueFrom:
+        configMapKeyRef:
+          name: slack-configmap
+          key: chText
   alertmanagerFiles:
     alertmanager.yml:
       global:
@@ -30,9 +30,9 @@ prometheus:
       receivers:
         - name: default-receiver
           slack_configs:
-            - channel: $(chType)
+            - channel: $chType
               send_resolved: true
-              text: $(chText)
+              text: $chText
       route:
         group_wait: 10s
         group_interval: 5m
