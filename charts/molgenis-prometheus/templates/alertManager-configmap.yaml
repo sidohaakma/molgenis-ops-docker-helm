@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: alertManager-configmap
+  name: alertmanager-configmap
 data:
 {{- if eq .Values.environment "production" -}}
   alertmanager.yml: |

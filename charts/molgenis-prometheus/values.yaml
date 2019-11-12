@@ -9,7 +9,7 @@ prometheus:
       requests:
         cpu: 10m
         memory: 32Mi
-    configMapOverrideName: alertManager-configmap
+    configMapOverrideName: alertmanager-configmap
   # alertmanagerFiles:
   #   alertmanager.yml:
   #     global:
