@@ -1,12 +1,12 @@
 questions:
-  - variable: 'environment.cluster'
+  - variable: 'environment'
     required: true
-    label: cluster
+    label: environment
     default: "development"
     type: enum
     options:
-      - "production"
-      - "development"
+      - production
+      - development
     description: "Cluster"
   - variable: 'prometheus.alertmanagerFiles.alertmanager\.yml.global.slack_api_url'
     required: true
