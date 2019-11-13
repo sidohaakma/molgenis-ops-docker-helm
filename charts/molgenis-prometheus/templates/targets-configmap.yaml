@@ -3,21 +3,21 @@ kind: ConfigMap
 metadata:
   name: targets-configmap
 data:
-{{- if eq .Values.environment "production" -}}
-  masterTargetsAcquired.yml: |
-    #job
-  20TargetsAcquired.yml: |
-    #job
-  10TargetsAcquired.yml: |
-    #job
-  01TargetsAcquired.yml: |
-    #job
-{{- end -}}
-{{- if eq .Values.environment "development" -}}
-  developmentpods.yml: |
-    - job_name: jenkins
-      metrics_path: '/prometheus/'
-      scheme: https
-      static_configs:
-        - targets: ['jenkins.dev.molgenis.org:443']
-{{- end -}}
+  {{- if eq .Values.environment "production" -}}
+    masterTargetsAcquired.yml: |
+      #job
+    20TargetsAcquired.yml: |
+      #job
+    10TargetsAcquired.yml: |
+      #job
+    01TargetsAcquired.yml: |
+      #job
+  {{- end -}}
+  {{- if eq .Values.environment "development" -}}
+    developmentpods.yml: |
+      - job_name: jenkins
+        metrics_path: '/prometheus/'
+        scheme: https
+        static_configs:
+          - targets: ['jenkins.dev.molgenis.org:443']
+  {{- end -}}
