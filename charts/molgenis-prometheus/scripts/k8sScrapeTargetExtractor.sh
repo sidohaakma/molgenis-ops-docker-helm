@@ -16,6 +16,7 @@
 nePort=9100
 serverlistServer=molgenis23.gcc.rug.nl
 BranchMASTER=$(curl -s https://${GITHUB_TOKEN}@raw.githubusercontent.com/molgenis/molgenis-ops-ansible/master/inventory.ini | awk '$2' | cut -d' ' -f1)
+Branch30=$(curl -s https://${GITHUB_TOKEN}@raw.githubusercontent.com/molgenis/molgenis-ops-ansible/3.0/inventory.ini | awk '$2' | cut -d' ' -f1)
 Branch20=$(curl -s https://${GITHUB_TOKEN}@raw.githubusercontent.com/molgenis/molgenis-ops-ansible/2.0/inventory.ini | awk '$2' | cut -d' ' -f1)
 Branch10=$(curl -s https://${GITHUB_TOKEN}@raw.githubusercontent.com/molgenis/molgenis-ops-ansible/1.0/inventory.ini | awk '$2' | cut -d' ' -f1)
 Branch01=$(curl -s https://${GITHUB_TOKEN}@raw.githubusercontent.com/molgenis/molgenis-ops-ansible/0.1/inventory.ini | awk '$2' | cut -d' ' -f1)
@@ -41,7 +42,27 @@ done < <(printf '%s\n' "${BranchMASTER}")
 
 printf "Branch master - finished\n"
 printf '%s\n' "${outputArray[@]}" >> masterTargetsAcquired.yml
-printf "Writing outputArray to masterTargetsAcquired.yml done\nBranch 2.0 - start\n"
+printf "Writing outputArray to masterTargetsAcquired.yml done\nBranch 3.0 - start\n"
+outputArray=("")
+while IFS=" " read -r host
+do
+  if [ ${host} != '#' ]; then
+    descGrab=$(curl -s https://$serverlistServer'/api/v2/mm_public_serverlist?q=url=='https://$host'&attrs=~id,TAP,description,url' | rev | cut -d':' -f4 | rev | cut -d'"' -f2)
+    dtapGrab=$(curl -s https://$serverlistServer'/api/v2/mm_public_serverlist?q=url=='https://$host'&attrs=~id,TAP,description,url' | rev | cut -d':' -f1 | rev | cut -d'"' -f2)
+    if [ "${descGrab}" = "," ]; then
+      descGrab=$(curl -s https://$serverlistServer'/api/v2/mm_public_serverlist?q=url=='https://$host'&attrs=~id,description' | rev | cut -d':' -f3 | rev | cut -d'"' -f2)
+    fi
+    outputArray+=("- targets: ['${host}:${nePort}']")
+    outputArray+=("  labels: ")
+    outputArray+=("    project: \"${descGrab}\"")
+    outputArray+=("    branch: \"3.0\"")
+    outputArray+=("    dtap: \"${dtapGrab}\"")
+  fi
+done < <(printf '%s\n' "${Branch20}")
+
+printf "Branch 3.0 - finished\n"
+printf '%s\n' "${outputArray[@]}" >> 30TargetsAcquired.yml
+printf "Writing outputArray to 30TargetsAcquired.yml done\nBranch 2.0 - start\n"
 outputArray=("")
 while IFS=" " read -r host
 do
@@ -103,8 +124,8 @@ printf '%s\n' "${outputArray[@]}" >> 01TargetsAcquired.yml
 printf "Writing outputArray to 01TargetsAcquired.yml done\n"
 #echo $(rancher kubectl config set-context edgecluster --cluster=edge-molgenis --namespace=molgenis-prometheus-prod)
 #echo $(rancher kubectl create configmap targets-configmap --from-file masterTargetsAcquired.yml --from-file 20TargetsAcquired.yml --from-file 10TargetsAcquired.yml --from-file 01TargetsAcquired.yml -o yaml --dry-run | rancher kubectl replace -f -)
-echo $(kubectl --token=$TOKEN create configmap targets-configmap --from-file masterTargetsAcquired.yml --from-file 20TargetsAcquired.yml --from-file 10TargetsAcquired.yml --from-file 01TargetsAcquired.yml -o yaml --dry-run | kubectl --token=$TOKEN replace -f -)
-printf "Rancher kubectl updatet configmap from molgenis-prometheus-prod\n"
+echo $(kubectl --token=$TOKEN create configmap targets-configmap --from-file masterTargetsAcquired.yml --from-file 30TargetsAcquired.yml --from-file 20TargetsAcquired.yml --from-file 10TargetsAcquired.yml --from-file 01TargetsAcquired.yml -o yaml --dry-run | kubectl --token=$TOKEN replace -f -)
+printf "Rancher kubectl updatet configmap from molgenis-prometheus\n"
 $(rm -f *TargetsAcquired.yml)
 printf "Removed artifacts\n"
 printf "Script done\n"
