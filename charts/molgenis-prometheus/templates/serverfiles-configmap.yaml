@@ -152,7 +152,7 @@ data:
             expr: kube_cronjob_spec_suspend != 0
             for: 5m
             labels:
-              severity: info
+              severity: "INFO"
             annotations:
               summary: |- {{`"Kubernetes CronJob suspended (instance {{ $labels.instance }})"`}}
               message: |- {{`"CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is suspended\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
@@ -188,40 +188,40 @@ data:
             annotations:
               summary: |- {{`"StatefulSet down (instance {{ $labels.instance }})"`}}
               message: |- {{`"A StatefulSet went down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-    serverFiles.rules: | 
-      {}
-    serverFiles.prometheus.yml: |
-      rule_files:
-        - /etc/config/rules
-        - /etc/config/alerts
-      scrape_configs:
-        {{ if eq .Values.environment "production" -}}
-        - job_name: 'masterBranchNodes'
-          file_sd_configs:
-            - files:
-              - /etc/configProm/*TargetsAcquired.yml
-        - job_name: '30BranchNodes'
-          file_sd_configs:
-            - files:
-              - /etc/configProm/30TargetsAcquired.yml
-        - job_name: '20BranchNodes'
-          file_sd_configs:
-            - files:
-              - /etc/configProm/20TargetsAcquired.yml
-        - job_name: '10BranchNodes'
-          file_sd_configs:
-            - files:
-              - /etc/configProm/10TargetsAcquired.yml
-        - job_name: '01BranchNodes'
-          file_sd_configs:
-            - files:
-              - /etc/configProm/01TargetsAcquired.yml
-        {{ end -}}
-        {{ if eq .Values.environment "development" -}}
-        - job_name: jenkins
-          metrics_path: '/prometheus/'
-          scheme: http
-          static_configs:
-            - targets: ['molgenis-jenkins.molgenis-jenkins.svc.devcluster.local:80']
-            #- targets: ['jenkins.dev.molgenis.org:443']
-        {{ end -}}
+  serverFiles.rules: | 
+    {}
+  serverFiles.prometheus.yml: |
+    rule_files:
+    - /etc/config/rules
+    - /etc/config/alerts
+    scrape_configs:
+      {{ if eq .Values.environment "production" -}}
+      - job_name: 'masterBranchNodes'
+        file_sd_configs:
+          - files:
+            - /etc/configProm/*TargetsAcquired.yml
+      - job_name: '30BranchNodes'
+        file_sd_configs:
+          - files:
+            - /etc/configProm/30TargetsAcquired.yml
+      - job_name: '20BranchNodes'
+        file_sd_configs:
+          - files:
+            - /etc/configProm/20TargetsAcquired.yml
+      - job_name: '10BranchNodes'
+        file_sd_configs:
+          - files:
+            - /etc/configProm/10TargetsAcquired.yml
+      - job_name: '01BranchNodes'
+        file_sd_configs:
+          - files:
+            - /etc/configProm/01TargetsAcquired.yml
+      {{ end -}}
+      {{ if eq .Values.environment "development" -}}
+      - job_name: jenkins
+        metrics_path: '/prometheus/'
+        scheme: http
+        static_configs:
+          - targets: ['molgenis-jenkins.molgenis-jenkins.svc.devcluster.local:80']
+          #- targets: ['jenkins.dev.molgenis.org:443']
+      {{ end -}}
