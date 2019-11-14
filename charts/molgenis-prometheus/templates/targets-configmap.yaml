@@ -13,11 +13,3 @@ data:
   01TargetsAcquired.yml: |
     #job
   {{ end -}}
-  {{ if eq .Values.environment "development" -}}
-  developmentpods.yml: |
-    - job_name: jenkins
-      metrics_path: '/prometheus/'
-      scheme: https
-      static_configs:
-        - targets: ['jenkins.dev.molgenis.org:443']
-  {{ end -}}
