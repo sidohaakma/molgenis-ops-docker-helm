@@ -9,7 +9,7 @@ data:
       slack_api_url: ''
     receivers:
       - name: default-receiver
-        slack_configs: >
+        slack_configs:
           - channel: '#alerts'
             send_resolved: true
             text: |- {{`{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}`}}
@@ -25,7 +25,7 @@ data:
       slack_api_url: ''
     receivers:
       - name: default-receiver
-        slack_configs: >
+        slack_configs:
           - channel: '#prometheus'
             send_resolved: true
             text: |- {{`{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}`}}
