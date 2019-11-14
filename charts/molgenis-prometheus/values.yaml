@@ -47,11 +47,6 @@ prometheus:
   server:
     nodeSelector:
       deployPod: "true"
-    extraConfigmapMounts:
-      - name: serverfiles
-        configMapName: serverfiles-configmap
-        mountPath: /etc/config
-        readOnly: true
     resources:
       limits:
         cpu: 1
