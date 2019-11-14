@@ -9,7 +9,16 @@ prometheus:
       requests:
         cpu: 10m
         memory: 32Mi
-    configMapOverrideName: "alertmanager-configmap"
+  alertmanagerFiles:
+    alertmanager.yml:
+      global:
+        slack_api_url: ''
+      receivers:
+        - name: default-receiver
+          slack_configs:
+            - channel: '#alerts'
+              send_resolved: true
+              text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.message }}\n{{ end }}"
 
   kubeStateMetrics:
     enabled: false
