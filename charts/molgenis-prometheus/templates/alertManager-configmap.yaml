@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}-alertmanager-configmap
 data:
   {{ if eq .Values.environment "production" -}}
-  alertmanagerFiles: |
+  alertmanagerFiles:
     alertmanager.yml: |
       global:
         slack_api_url: ''
@@ -21,7 +21,7 @@ data:
         repeat_interval: 3h
   {{ end -}}
   {{ if eq .Values.environment "development" -}}
-  alertmanagerFiles: |
+  alertmanagerFiles:
     alertmanager.yml: |
       global:
         slack_api_url: ''

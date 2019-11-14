@@ -3,225 +3,226 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-serverfiles-configmap
 data:
-  serverFiles.alerts: |
-    groups:
-      {{ if eq .Values.environment "production" -}}
-      - name: virtualmachines
-        rules:
-          - alert: "Instance or node_exporter Down"
-            expr: up == 0
-            annotations:
-              severity: "ERROR"
-              summary: "Instance or node_exporter Down"
-              message: |- {{`"Instance or node_exporter of {{$labels.instance}} is down\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: OutOfMemory
-            expr: node_memory_MemFree / node_memory_MemTotal * 100 < 10
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Out of memory (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: UnusualNetworkThroughputIn
-            expr: sum by (instance) (irate(node_network_receive_bytes[2m])) / 1024 / 1024 > 100
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Unusual network throughput in (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Host network interfaces are probably receiving too much data (> 100 MB/s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: UnusualNetworkThroughputOut
-            expr: sum by (instance) (irate(node_network_transmit_bytes[2m])) / 1024 / 1024 > 100
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Unusual network throughput out (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Host network interfaces are probably sending too much data (> 100 MB/s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: UnusualDiskReadRate
-            expr: sum by (instance) (irate(node_disk_read_bytes[2m])) / 1024 / 1024 > 50
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Unusual disk read rate (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Disk is probably reading too much data (> 50 MB/s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: UnusualDiskWriteRate
-            expr: sum by (instance) (irate(node_disk_written_bytes[2m])) / 1024 / 1024 > 50
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Unusual disk write rate (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Disk is probably writing too much data (> 50 MB/s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: OutOfDiskSpace
-            expr: node_filesystem_free_bytes{mountpoint ="/rootfs"} / node_filesystem_size_bytes{mountpoint ="/rootfs"} * 100 < 10
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Out of disk space (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: OutOfInodes
-            expr: node_filesystem_files_free{mountpoint ="/rootfs"} / node_filesystem_files{mountpoint ="/rootfs"} * 100 < 10
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Out of inodes (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Disk is almost running out of available inodes (< 10% left)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: UnusualDiskReadLatency
-            expr: rate(node_disk_read_time_ms[1m]) / rate(node_disk_reads_completed[1m]) > 100
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Unusual disk read latency (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Disk latency is growing (read operations > 100ms)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: UnusualDiskWriteLatency
-            expr: rate(node_disk_write_time_ms[1m]) / rate(node_disk_writes_completed[1m]) > 100
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Unusual disk write latency (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Disk latency is growing (write operations > 100ms)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: HighCpuLoad
-            expr: 100 - (avg by(instance) (irate(node_cpu{mode="idle"}[5m])) * 100) > 80
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"High CPU load (instance {{ $labels.instance }})"`}}
-              message: |- {{`"CPU load is > 80%\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: ContextSwitching
-            expr: rate(node_context_switches[5m]) > 1000
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Context switching (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Context switching is growing on node (> 1000 / s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          - alert: SwapIsFillingUp
-            expr: (1 - (node_memory_SwapFree / node_memory_SwapTotal)) * 100 > 80
-            for: 5m
-            annotations:
-              severity: "WARN"
-              summary: |- {{`"Swap is filling up (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Swap is filling up (>80%)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
-          {{ end -}}
-      - name: nodes
-        rules:
-          - alert: "Node Down"
-            expr: up{job="kubernetes-nodes"} == 0
-            annotations:
-              miqTarget: "ContainerNode"
-              severity: "ERROR"
-              summary: |- {{`Node DOWN on rancher cluster`}}
-              message: |- {{`"Node {{$labels.instance}} is down"`}}
-      - name: pods
-        rules:
-          - alert: "Pod OOMKilled"
-            expr: kube_pod_container_status_terminated_reason{reason='OOMKilled'} == 1
-            annotations:
-              severity: "WARN"
-              summary: |- {{`OOMKilled`}}
-              message: |- {{`"Pod {{$labels.container}} in namespace {{$labels.namespace}} got OOMKilled."`}}
-          - alert: KubernetesMemorypressure
-            expr: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
-            for: 5m
-            labels:
-              severity: "ERROR"
-            annotations:
-              summary: |- {{`"Kubernetes MemoryPressure (instance {{ $labels.instance }})"`}}
-              message: |- {{`"{{ $labels.node }} has MemoryPressure condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-          - alert: KubernetesDiskpressure
-            expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
-            for: 5m
-            labels:
-              severity: "ERROR"
-            annotations:
-              summary: |- {{`"Kubernetes DiskPressure (instance {{ $labels.instance }})"`}}
-              message: |- {{`"{{ $labels.node }} has DiskPressure condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-          - alert: KubernetesOutofdisk
-            expr: kube_node_status_condition{condition="OutOfDisk",status="true"} == 1
-            for: 5m
-            labels:
-              severity: "ERROR"
-            annotations:
-              summary: |- {{`"Kubernetes OutOfDisk (instance {{ $labels.instance }})"`}}
-              message: |- {{`"{{ $labels.node }} has OutOfDisk condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-          - alert: KubernetesJobFailed
-            expr: kube_job_status_failed > 0
-            for: 5m
-            labels:
-              severity: "WARN"
-            annotations:
-              summary: |- {{`"Kubernetes Job failed (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Job {{$labels.namespace}}/{{$labels.exported_job}} failed to complete\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-          - alert: KubernetesCronjobSuspended
-            expr: kube_cronjob_spec_suspend != 0
-            for: 5m
-            labels:
-              severity: "INFO"
-            annotations:
-              summary: |- {{`"Kubernetes CronJob suspended (instance {{ $labels.instance }})"`}}
-              message: |- {{`"CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is suspended\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-          - alert: KubernetesPersistentvolumeclaimPending
-            expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
-            for: 5m
-            labels:
-              severity: "WARN"
-            annotations:
-              summary: |- {{`"Kubernetes PersistentVolumeClaim pending (instance {{ $labels.instance }})"`}}
-              message: |- {{`"PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-          - alert: VolumeOutOfDiskSpace
-            expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10
-            for: 5m
-            labels:
-              severity: "WARN"
-            annotations:
-              summary: |- {{`"Volume out of disk space (instance {{ $labels.instance }})"`}}
-              message: |- {{`"Volume is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-          - alert: VolumeFullInFourDays
-            expr: 100 * (kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes) < 15 and predict_linear(kubelet_volume_stats_available_bytes[6h], 4 * 24 * 3600) < 0
-            for: 5m
-            labels:
-              severity: "ERROR"
-            annotations:
-              summary: |- {{`"Volume full in four days (instance {{ $labels.instance }})"`}}
-              message: |- {{`"{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is expected to fill up within four days. Currently {{ $value | humanize }}% is available.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-          - alert: StatefulsetDown
-            expr: (kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1
-            for: 5m
-            labels:
-              severity: "ERROR"
-            annotations:
-              summary: |- {{`"StatefulSet down (instance {{ $labels.instance }})"`}}
-              message: |- {{`"A StatefulSet went down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
-  serverFiles.rules: | 
-    {}
-  serverFiles.prometheus.yml: |
-    rule_files:
-    - /etc/config/rules
-    - /etc/config/alerts
-    scrape_configs:
-      {{ if eq .Values.environment "production" -}}
-      - job_name: 'masterBranchNodes'
-        file_sd_configs:
-          - files:
-            - /etc/configProm/*TargetsAcquired.yml
-      - job_name: '30BranchNodes'
-        file_sd_configs:
-          - files:
-            - /etc/configProm/30TargetsAcquired.yml
-      - job_name: '20BranchNodes'
-        file_sd_configs:
-          - files:
-            - /etc/configProm/20TargetsAcquired.yml
-      - job_name: '10BranchNodes'
-        file_sd_configs:
-          - files:
-            - /etc/configProm/10TargetsAcquired.yml
-      - job_name: '01BranchNodes'
-        file_sd_configs:
-          - files:
-            - /etc/configProm/01TargetsAcquired.yml
-      {{ end -}}
-      {{ if eq .Values.environment "development" -}}
-      - job_name: jenkins
-        metrics_path: '/prometheus/'
-        scheme: http
-        static_configs:
-          - targets: ['molgenis-jenkins.molgenis-jenkins.svc.devcluster.local:80']
-          #- targets: ['jenkins.dev.molgenis.org:443']
-      {{ end -}}
+  serverFiles: |
+    alerts: |
+      groups:
+        {{ if eq .Values.environment "production" -}}
+        - name: virtualmachines
+          rules:
+            - alert: "Instance or node_exporter Down"
+              expr: up == 0
+              annotations:
+                severity: "ERROR"
+                summary: "Instance or node_exporter Down"
+                message: |- {{`"Instance or node_exporter of {{$labels.instance}} is down\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: OutOfMemory
+              expr: node_memory_MemFree / node_memory_MemTotal * 100 < 10
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Out of memory (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: UnusualNetworkThroughputIn
+              expr: sum by (instance) (irate(node_network_receive_bytes[2m])) / 1024 / 1024 > 100
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Unusual network throughput in (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Host network interfaces are probably receiving too much data (> 100 MB/s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: UnusualNetworkThroughputOut
+              expr: sum by (instance) (irate(node_network_transmit_bytes[2m])) / 1024 / 1024 > 100
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Unusual network throughput out (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Host network interfaces are probably sending too much data (> 100 MB/s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: UnusualDiskReadRate
+              expr: sum by (instance) (irate(node_disk_read_bytes[2m])) / 1024 / 1024 > 50
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Unusual disk read rate (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Disk is probably reading too much data (> 50 MB/s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: UnusualDiskWriteRate
+              expr: sum by (instance) (irate(node_disk_written_bytes[2m])) / 1024 / 1024 > 50
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Unusual disk write rate (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Disk is probably writing too much data (> 50 MB/s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: OutOfDiskSpace
+              expr: node_filesystem_free_bytes{mountpoint ="/rootfs"} / node_filesystem_size_bytes{mountpoint ="/rootfs"} * 100 < 10
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Out of disk space (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: OutOfInodes
+              expr: node_filesystem_files_free{mountpoint ="/rootfs"} / node_filesystem_files{mountpoint ="/rootfs"} * 100 < 10
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Out of inodes (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Disk is almost running out of available inodes (< 10% left)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: UnusualDiskReadLatency
+              expr: rate(node_disk_read_time_ms[1m]) / rate(node_disk_reads_completed[1m]) > 100
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Unusual disk read latency (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Disk latency is growing (read operations > 100ms)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: UnusualDiskWriteLatency
+              expr: rate(node_disk_write_time_ms[1m]) / rate(node_disk_writes_completed[1m]) > 100
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Unusual disk write latency (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Disk latency is growing (write operations > 100ms)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: HighCpuLoad
+              expr: 100 - (avg by(instance) (irate(node_cpu{mode="idle"}[5m])) * 100) > 80
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"High CPU load (instance {{ $labels.instance }})"`}}
+                message: |- {{`"CPU load is > 80%\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: ContextSwitching
+              expr: rate(node_context_switches[5m]) > 1000
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Context switching (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Context switching is growing on node (> 1000 / s)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            - alert: SwapIsFillingUp
+              expr: (1 - (node_memory_SwapFree / node_memory_SwapTotal)) * 100 > 80
+              for: 5m
+              annotations:
+                severity: "WARN"
+                summary: |- {{`"Swap is filling up (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Swap is filling up (>80%)\n  VALUE = {{ $value }}\nBranch: {{ $labels.branch }}\nProject: {{ $labels.project }}\nDTAP: {{ $labels.dtap }}"`}}
+            {{ end -}}
+        - name: nodes
+          rules:
+            - alert: "Node Down"
+              expr: up{job="kubernetes-nodes"} == 0
+              annotations:
+                miqTarget: "ContainerNode"
+                severity: "ERROR"
+                summary: |- {{`Node DOWN on rancher cluster`}}
+                message: |- {{`"Node {{$labels.instance}} is down"`}}
+        - name: pods
+          rules:
+            - alert: "Pod OOMKilled"
+              expr: kube_pod_container_status_terminated_reason{reason='OOMKilled'} == 1
+              annotations:
+                severity: "WARN"
+                summary: |- {{`OOMKilled`}}
+                message: |- {{`"Pod {{$labels.container}} in namespace {{$labels.namespace}} got OOMKilled."`}}
+            - alert: KubernetesMemorypressure
+              expr: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+              for: 5m
+              labels:
+                severity: "ERROR"
+              annotations:
+                summary: |- {{`"Kubernetes MemoryPressure (instance {{ $labels.instance }})"`}}
+                message: |- {{`"{{ $labels.node }} has MemoryPressure condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
+            - alert: KubernetesDiskpressure
+              expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+              for: 5m
+              labels:
+                severity: "ERROR"
+              annotations:
+                summary: |- {{`"Kubernetes DiskPressure (instance {{ $labels.instance }})"`}}
+                message: |- {{`"{{ $labels.node }} has DiskPressure condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
+            - alert: KubernetesOutofdisk
+              expr: kube_node_status_condition{condition="OutOfDisk",status="true"} == 1
+              for: 5m
+              labels:
+                severity: "ERROR"
+              annotations:
+                summary: |- {{`"Kubernetes OutOfDisk (instance {{ $labels.instance }})"`}}
+                message: |- {{`"{{ $labels.node }} has OutOfDisk condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
+            - alert: KubernetesJobFailed
+              expr: kube_job_status_failed > 0
+              for: 5m
+              labels:
+                severity: "WARN"
+              annotations:
+                summary: |- {{`"Kubernetes Job failed (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Job {{$labels.namespace}}/{{$labels.exported_job}} failed to complete\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
+            - alert: KubernetesCronjobSuspended
+              expr: kube_cronjob_spec_suspend != 0
+              for: 5m
+              labels:
+                severity: "INFO"
+              annotations:
+                summary: |- {{`"Kubernetes CronJob suspended (instance {{ $labels.instance }})"`}}
+                message: |- {{`"CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is suspended\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
+            - alert: KubernetesPersistentvolumeclaimPending
+              expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+              for: 5m
+              labels:
+                severity: "WARN"
+              annotations:
+                summary: |- {{`"Kubernetes PersistentVolumeClaim pending (instance {{ $labels.instance }})"`}}
+                message: |- {{`"PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
+            - alert: VolumeOutOfDiskSpace
+              expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10
+              for: 5m
+              labels:
+                severity: "WARN"
+              annotations:
+                summary: |- {{`"Volume out of disk space (instance {{ $labels.instance }})"`}}
+                message: |- {{`"Volume is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
+            - alert: VolumeFullInFourDays
+              expr: 100 * (kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes) < 15 and predict_linear(kubelet_volume_stats_available_bytes[6h], 4 * 24 * 3600) < 0
+              for: 5m
+              labels:
+                severity: "ERROR"
+              annotations:
+                summary: |- {{`"Volume full in four days (instance {{ $labels.instance }})"`}}
+                message: |- {{`"{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is expected to fill up within four days. Currently {{ $value | humanize }}% is available.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
+            - alert: StatefulsetDown
+              expr: (kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1
+              for: 5m
+              labels:
+                severity: "ERROR"
+              annotations:
+                summary: |- {{`"StatefulSet down (instance {{ $labels.instance }})"`}}
+                message: |- {{`"A StatefulSet went down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"`}}
+    rules: | 
+      {}
+    prometheus.yml: |
+      rule_files:
+      - /etc/config/rules
+      - /etc/config/alerts
+      scrape_configs:
+        {{ if eq .Values.environment "production" -}}
+        - job_name: 'masterBranchNodes'
+          file_sd_configs:
+            - files:
+              - /etc/configProm/*TargetsAcquired.yml
+        - job_name: '30BranchNodes'
+          file_sd_configs:
+            - files:
+              - /etc/configProm/30TargetsAcquired.yml
+        - job_name: '20BranchNodes'
+          file_sd_configs:
+            - files:
+              - /etc/configProm/20TargetsAcquired.yml
+        - job_name: '10BranchNodes'
+          file_sd_configs:
+            - files:
+              - /etc/configProm/10TargetsAcquired.yml
+        - job_name: '01BranchNodes'
+          file_sd_configs:
+            - files:
+              - /etc/configProm/01TargetsAcquired.yml
+        {{ end -}}
+        {{ if eq .Values.environment "development" -}}
+        - job_name: jenkins
+          metrics_path: '/prometheus/'
+          scheme: http
+          static_configs:
+            - targets: ['molgenis-jenkins.molgenis-jenkins.svc.devcluster.local:80']
+            #- targets: ['jenkins.dev.molgenis.org:443']
+        {{ end -}}
