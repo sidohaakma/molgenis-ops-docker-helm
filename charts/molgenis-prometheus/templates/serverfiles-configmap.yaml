@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: serverfiles-configmap
+  name: {{ .Release.Name }}-serverfiles-configmap
 data:
   serverFiles.alerts: |
     groups:
