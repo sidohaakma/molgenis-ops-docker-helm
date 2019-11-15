@@ -1,6 +1,6 @@
 name: molgenis-prometheus
 home: https://prometheus.io/
-version: 0.0.17
+version: 0.0.18
 appVersion: 2.13.1
 description: Molgenis installation for the Prometheus chart.
 sources:
