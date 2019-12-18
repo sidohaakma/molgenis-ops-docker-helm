@@ -59,6 +59,7 @@ questions:
     group: CRM
   - variable: dataPlatform.url
     label: Lifelines data platform URL
+    default: "https://acc-dp.lifelines.nl:8080"
     type: string
     required: true
     group: Data platform
