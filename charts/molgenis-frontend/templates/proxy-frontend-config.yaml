@@ -1,20 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-config
+  name: {{ .Release.Name }}-frontend-config
   labels:
     app: {{ template "frontend.name" . }}
     chart: "{{ $.Chart.Name }}-{{ $.Chart.Version }}"
     release: "{{ $.Release.Name }}"
     heritage: "{{ $.Release.Service }}"
 data:
-  backend.conf: |
-    location / {  
-      proxy_pass {{ template "backend.servicename" . }};
-      client_max_body_size 0;
-    }
   custom.conf: |
-    {{ range $index, $location := .Values.proxy.custom -}}
+    {{ range $index, $location := .Values.proxy.frontend.custom -}}
     location /{{ $location.path }}/ {
       proxy_pass {{ $location.url }}/;
       {{- if and (index $location.unpkg) $location.unpkg }}
@@ -25,7 +20,7 @@ data:
     }
     {{ end }}
   experimental.conf: |
-    {{ range $index, $location := .Values.proxy.experimental -}}
+    {{ range $index, $location := .Values.proxy.frontend.experimental -}}
     location /{{ $location.path }}/ {
       proxy_pass {{ $location.url }}/;
       {{- if and (index $location.unpkg) $location.unpkg }}
