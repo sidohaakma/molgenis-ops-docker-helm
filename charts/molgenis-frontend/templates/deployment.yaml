@@ -30,11 +30,11 @@ spec:
             - containerPort: {{ .service.port }}
           volumeMounts:
           - name: proxy-backend-config
-            mountPath: /etc/nginx/proxy.d
+            mountPath: /etc/nginx/conf.d/
             subPath: backend.conf
           {{- if .proxy.frontend.override }}
           - name: proxy-frontend-config
-            mountPath: /etc/nginx/proxy.d/frontend
+            mountPath: /etc/nginx/conf.frontend.d/
           {{- end }}
           resources:
 {{ toYaml .resources | indent 12 }}
