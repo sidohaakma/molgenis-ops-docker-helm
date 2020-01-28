@@ -70,3 +70,9 @@ questions:
     - "registry.molgenis.org"
   required: true
   group: "Provisioning"
+- variable: proxy.frontend.enabled
+  show_if: "questions.advanced=true"
+  label: Frontend proxy override
+  default: "true"
+  description: "Select a registry to pull from"
+  group: "Proxy"

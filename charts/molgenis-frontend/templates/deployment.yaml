@@ -32,7 +32,7 @@ spec:
           - name: proxy-backend-config
             mountPath: /etc/nginx/proxy.d
             subPath: backend.conf
-          {{- if .frontend.override -}}    
+          {{- if .proxy.frontend.override }}    
           volumeMounts:
           - name: proxy-frontend-config
             mountPath: /etc/nginx/proxy.d/frontend
