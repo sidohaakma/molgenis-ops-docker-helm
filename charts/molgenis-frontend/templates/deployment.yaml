@@ -37,7 +37,7 @@ spec:
             mountPath: /etc/nginx/proxy.d/frontend
           {{- end }}
           resources:
-{{ toYaml .resources | nindent 12 }}
+{{ toYaml .resources | indent 12 }}
           livenessProbe:
             tcpSocket:
               port: 80
