@@ -32,11 +32,10 @@ spec:
           - name: proxy-backend-config
             mountPath: /etc/nginx/proxy.d
             subPath: backend.conf
-          {{- if .proxy.frontend.override }}    
-          volumeMounts:
+          {{- if .proxy.frontend.override }}
           - name: proxy-frontend-config
             mountPath: /etc/nginx/proxy.d/frontend
-          {{- end -}}
+          {{- end }}
           resources:
 {{ toYaml .resources | nindent 12 }}
           livenessProbe:
